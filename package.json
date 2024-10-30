@@ -15,5 +15,8 @@
     "electron": "^33.0.2",
     "node-fetch": "^3.3.2",
     "puppeteer": "^23.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.8.2"
   }
 }
