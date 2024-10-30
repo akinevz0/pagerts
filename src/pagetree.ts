@@ -1,4 +1,4 @@
-import type { LinkTree } from "./linktree";
+import { LinkTree } from "./linktree";
 
 export class PageTree {
     workDir: string;
@@ -7,11 +7,12 @@ export class PageTree {
         this.workDir = workDir
     }
 
-    async load(url: string, depth?: number) : Promise<LinkTree> {
+    async load(url: string, depth: number, fresh: boolean = false) : Promise<LinkTree> {
+        const linkTree = new LinkTree(url).load(depth)
         throw new Error('Method not implemented.');
     }
 
-    async purge(url: string) : Promise<void> {
+    async purge(url: string) : Promise<LinkTree> {
         throw new Error('Method not implemented.');
     }
 }

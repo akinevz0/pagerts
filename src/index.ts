@@ -1,9 +1,11 @@
-import { program } from 'commander'
-import { PageTree } from './pagetree.ts'
-import { LinkTree } from './linktree.ts'
-import { LinkTreeExplorer } from './explorer.ts'
+import { PageTree } from './pagetree'
+import { LinkTreeExplorer } from './explorer'
 
-const pageTree = new PageTree(process.cwd())
+import { program } from 'commander'
+
+import { cwd } from 'node:process'
+
+const pageTree = new PageTree(cwd())
 
 program
     .name('pagetree')
@@ -16,8 +18,9 @@ program.command('load')
     .option('-f, --fresh', 'force a fresh download of the linktree')
     .argument('<url>', 'the URL of the webpage from which a linktree will be made')
     .action(async (options: { depth: number, fresh: boolean }, url: string) => {
-        const linkTree = await pageTree.load(url)
-        await linkTree.load(options.depth)
+        const linkTree = await pageTree.load(url, options.depth, options.fresh)
+        const linkTreeLoaded = await linkTree.load(options.depth)
+        console.log(`contents for linktree:\n${linkTreeLoaded.contents()}`)
     })
 
 // TODO: <<IMPLEMENTATION>>: store the linktrees on the file system or database?
@@ -25,7 +28,8 @@ program.command('purge')
     .description('purge a linktree. Completely removes the linktree from cache')
     .argument('<url>', 'the URL of the webpage which will be purged')
     .action(async (url: string) => {
-        await pageTree.purge(url)
+        const linkTree = await pageTree.purge(url)
+        console.log(`purge complete for linktree:\n${linkTree.header()}`)
     })
 
 program.command('prune')
@@ -33,8 +37,9 @@ program.command('prune')
     .option('-d, --depth <number>', 'the depth of the resulting linktree', '1')
     .argument('<url>', 'the URL of the webpage which will be pruned')
     .action(async (options: { depth: number }, url: string) => {
-        const linkTree = await pageTree.load(url)
-        await linkTree.prune(options.depth)
+        const linkTree = await pageTree.load(url, options.depth)
+        const linkTreePruned = await linkTree.prune(options.depth)
+        console.log(`prune complete for linktree:\n${linkTree.header()}\nnew depth: ${linkTree.depth}`)
     })
 
 program.command('explore')
@@ -42,8 +47,8 @@ program.command('explore')
     .option('-d, --depth <number>', 'the depth of the linktree to pre-load', '1')
     .option('-f, --fresh', 'force a fresh download of the linktree')
     .argument('<url>', 'the URL of the webpage')
-    .action(async (options: { depth: number }, url: string) => {
-        const linkTree = await pageTree.load(url, options.depth)
+    .action(async (options: { depth: number, fresh: boolean }, url: string) => {
+        const linkTree = await pageTree.load(url, options.depth, options.fresh)
         const explorer = new LinkTreeExplorer(linkTree)
         await explorer.run()
     })
@@ -53,7 +58,7 @@ program.command('gui-explore')
     .option('-d, --depth <number>', 'the depth of the linktree', '1')
     .option('-f, --fresh', 'force a fresh download of the linktree')
     .argument('<url>', 'the URL of the webpage')
-    .action(async (options: { depth: number }, url: string) => {
+    .action(async (options: { depth: number, fresh: boolean }, url: string) => {
         throw new Error("Function not implemented.");
     })
 
