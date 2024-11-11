@@ -5,8 +5,6 @@ import { program } from 'commander'
 
 import { cwd } from 'node:process'
 
-const pageTree = new PageTree(cwd())
-
 program
     .name('pagetree')
     .version('0.0.1')
@@ -18,9 +16,9 @@ program.command('load')
     .option('-f, --fresh', 'force a fresh download of the linktree')
     .argument('<url>', 'the URL of the webpage from which a linktree will be made')
     .action(async (options: { depth: number, fresh: boolean }, url: string) => {
-        const linkTree = await pageTree.load(url, options.depth, options.fresh)
-        const linkTreeLoaded = await linkTree.load(options.depth)
-        console.log(`contents for linktree:\n${linkTreeLoaded.contents()}`)
+        const pageTree = new PageTree(url, options.depth, options.fresh)
+        const linkTree = await pageTree.load(options.depth)
+        console.log(`contents for linktree:\n${linkTree.contents()}`)
     })
 
 // TODO: <<IMPLEMENTATION>>: store the linktrees on the file system or database?
