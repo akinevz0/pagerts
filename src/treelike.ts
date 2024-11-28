@@ -1,5 +1,5 @@
-export interface TreeLike<T> {
-    children: TreeLike<T>[]
-    metadata: T
+export interface TreeLike<K, V = TreeLike<K, undefined>> {
+    children: V[]
+    metadata: K
 }
 

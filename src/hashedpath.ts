@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { join } from "path/posix";
 import { cwd } from "process";
-import { PAGETREE_OFF_DIR } from "./pagetree";
+import { PAGETREE_DATA_DIR } from "./linktree";
 
 type URLBlob = {
     host: string;
@@ -21,7 +21,7 @@ const urlBlob = (url: URL): URLBlob => {
  */
 export const hashedPath = (url: URL, algorithm: string = 'sha256'): string => {
     const blob = urlBlob(url);
-    let outputPath = join(cwd(), PAGETREE_OFF_DIR);
+    let outputPath = join(cwd(), PAGETREE_DATA_DIR);
     for (const key in blob) {
         const hash = createHash(algorithm);
         hash.update(blob[key]);

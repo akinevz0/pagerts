@@ -1,78 +1,64 @@
-import puppeteer, { type Browser, type Page } from "puppeteer";
-import { LinkTree } from "./linktree";
-import { cwd } from "node:process";
-import { join } from "node:path";
-import { mkdir, readFile, rmdir, stat, writeFile } from "node:fs/promises";
-import type { PageMetadata } from "./pagemetadata";
-import { hashedPath } from "./hashedpath";
 import Downloader from "./downloader";
+import { LinkTree, type LinkMetadata } from "./linktree";
+import type { Page } from "puppeteer";
 
-export const PAGETREE_OFF_DIR = 'pagetree'
+export type PageMetadata = LinkMetadata & {
+    title: string,
+}
+
+export const createMetadata = async (page: Page): Promise<PageMetadata> => {
+    return {
+        url: new URL(page.url()),
+        title: await page.title(),
+    }
+}
 
 /**
  * A class that represents a Tree of hyperlinks belonging to a webpage
  */
-export class PageTree {
-    /**
-     * the URL of the webpage from which a linktree will be made
-     */
-    url: URL;
+export class PageTree extends LinkTree<PageMetadata, PageTree> {
 
     /**
-     * root directory to where the linktree will be stored
+     * page object of the webpage
+     * source of the links 
      */
-    workDir: string;
+    page: Page;
 
     /**
      * instance of puppeteer's browser for this session
      */
     downloader: Downloader;
 
-    /**
-     * the directory where the linktrees will be stored
-     */
-    linksDir: string;
-
-    constructor(url: string, workDir: string = cwd()) {
-        this.url = new URL(url)
-        this.workDir = workDir
-        this.linksDir = join(workDir, PAGETREE_OFF_DIR)
-        this.downloader = new Downloader()
+    constructor(metadata: PageMetadata, downloader: Downloader = new Downloader()) {
+        super(metadata)
+        this.downloader = downloader
     }
 
-    async load(fresh: boolean = false, depth: number = 1): Promise<LinkTree> {
-        await this.downloader.initialise()
-        const metadata = this.metadata(depth)
-        const path = hashedPath(this.url)
-        if (fresh || (await metadata)?.broken() ) {
-            const fresh = await this.downloader.get(this.url);
-            // TODO: implement caching
-            return LinkTree.fromPage(fresh, depth, this)
-        }
-        const data = await readFile(path, 'utf8')
-        const json = JSON.parse(data)
-        return new LinkTree(json, depth)
+    async load(fresh: boolean = false): Promise<LoadedPageTree> {
+        if (!fresh && this.children)
+            return new LoadedPageTree(this.metadata, this.children)
+        this.page = await this.downloader.page(this.metadata.url)
+        const links = extractLinks(this.page)
+        
     }
 
-    async isLocal() {
-        const path = hashedPath(this.url)
-        // check if path exists
-        const stats = await stat(path)
-        return stats.isDirectory()
+}
+
+export class LoadedPageTree extends LinkTree<PageMetadata> {
+    constructor(metadata: PageMetadata, children: LinkTree<PageMetadata>[]) {
+        super(metadata)
+        this.children = children
     }
+}
 
-
-
-    async metadata(depth?: number): Promise<PageMetadata> {
-
-    }
-
-    async purge(): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
-
-    async prune(depth: number): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
+async function extractLinks(page: Page): Promise<HTMLAnchorElement[]> {
+    const linkSelector = "a[href]"
+    const isAnchor = (element: Element): element is HTMLAnchorElement => element instanceof HTMLAnchorElement && typeof element.href === 'string' && element.href.length > 0
+    const links = page.evaluate((selector) => {
+        const elements = document.querySelectorAll(selector)
+        return Array.from(elements)
+            .filter(element => isAnchor(element))
+    }, linkSelector)
+    return links
 }
 

@@ -1,12 +1,11 @@
-import type { LinkTree } from "./linktree";
-
+import type { TreeLike<T> } from "./pagetree";
 
 export class LinkTreeExplorer {
     async run() {
         throw new Error('Method not implemented.');
     }
-    linkTree: LinkTree;
-    constructor(linkTree: LinkTree) {
+    linkTree: TreeLike<T>;
+    constructor(linkTree: TreeLike<T>) {
         this.linkTree = linkTree
     }
 }

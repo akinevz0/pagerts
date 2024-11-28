@@ -1,4 +1,4 @@
-import { PageTree } from './pagetree'
+import { LinkTree } from './linktree'
 import { LinkTreeExplorer } from './explorer'
 
 import { program } from 'commander'
@@ -16,8 +16,8 @@ program.command('load')
     .option('-f, --fresh', 'force a fresh download of the linktree')
     .argument('<url>', 'the URL of the webpage from which a linktree will be made')
     .action(async (options: { depth: number, fresh: boolean }, url: string) => {
-        const pageTree = new PageTree(url, options.depth, options.fresh)
-        const linkTree = await pageTree.load(options.depth)
+        const pageTree = new LinkTree()
+        const linkTree = await pageTree.load(new URL(url), options.depth, options.fresh)
         console.log(`contents for linktree:\n${linkTree.contents()}`)
     })
 
