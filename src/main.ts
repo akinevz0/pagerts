@@ -1,5 +1,4 @@
 import Commander from "commander";
-import puppetteer from "puppeteer";
 import PageExtractor from "./PageExtractor";
 import { PageFetcher } from "./PageFetcher";
 
@@ -25,15 +24,10 @@ const url = Commander.createArgument("<url|file...>", "remote URL or local file 
     .addArgument(url)
     .action(async (urls: string[]) => {
       console.log("Extracting resources from:", urls.join(", "))
-      const browser = await puppetteer.launch({
-        headless: true,
-        args: ["--no-sandbox"]
-      })
       const extractor = new PageExtractor('a', 'img', 'script')
-      const pageFetcher = new PageFetcher(browser)
+      const pageFetcher = new PageFetcher()
       const pages = await Promise.all(urls.map(u => pageFetcher.fetchPage(u)))
       const resources = await Promise.all(pages.map(p => extractor.executePlugins(p)))
-      browser.close();
       resources.forEach(({ url, title, resources }) => {
         console.log(`Resource from ${url}`)
         console.log(`\tTitle: ${title}`)
