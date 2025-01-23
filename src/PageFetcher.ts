@@ -1,6 +1,10 @@
 import { JSDOM } from 'jsdom';
 export class PageFetcher {
     async fetchPage(url: string): Promise<JSDOM> {
-        return JSDOM.fromURL(url);
+        try {
+            return JSDOM.fromURL(url);
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 }
