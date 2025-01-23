@@ -21,7 +21,7 @@ const url = Commander.createArgument("<url|file...>", "remote URL or local file 
     .description(program_description)
     .addArgument(url)
     .action(async (urls: string[]) => {
-      console.log("Extracting resources from:", urls.join(", "))
+      console.log("Extracting resources from:", urls)
       const extractor = new PageExtractor('a', 'img', 'script', 'link')
 
       const pageFetcher = new PageFetcher()

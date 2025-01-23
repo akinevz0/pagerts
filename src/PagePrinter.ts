@@ -14,7 +14,8 @@ export class LogStylePagePrinter extends AbstractResourcePrinter {
                     const { key, text, url }: ElementDescription = await this.extract(resource)
                     console.log(`\t- ${text}(${key}): ${url}`)
                 } catch (error) {
-                    console.error(`\t- ResourceElement with no external resource found:\n`, error)
+                    console.error(`\t- ResourceElement with no external resource found:`)
+                    console.error(`\t `, error)
                 }
             }
         }
