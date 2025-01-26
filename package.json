@@ -9,7 +9,7 @@
     "start": "node dist",
     "dev": "npx tsx src/main.ts"
   },
-  "bin": "pagetree",
+  "bin": "treepage",
   "keywords": [
     "webpage",
     "hierarchy",
