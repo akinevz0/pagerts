@@ -1,8 +1,10 @@
 import Commander from "commander";
+
 import { description, name, version } from '../package.json';
 import PageExtractor from "./PageExtractor";
 import { PageFetcher } from "./PageFetcher";
 import { LogStylePagePrinter as PagePrinter } from './PagePrinter';
+
 const program = new Commander.Command();
 
 const url = Commander.createArgument("<url|file...>", "remote URL or local file to extract remote resources from");
